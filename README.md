@@ -6,6 +6,8 @@ Receives OpenTrack data and outputs it to any DSU clients
 
 A configuration json "appsettings.json" is shipped with the application.  This file contains application settings that can be modified.
 
+There is one additional option compared to the base OpenTrackDSUServer: `UseRawValues` (Boolean) which, if true, will pass absolute position and orientation rather than deltas.
+
 ## OpenTrack
 
 Please go to their [github](https://github.com/opentrack/opentrack) to get more information on how to configure and use OpenTrack.
