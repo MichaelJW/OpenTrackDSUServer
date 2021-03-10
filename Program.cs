@@ -55,7 +55,11 @@ namespace OpenTrackToDSUProtocol
             }
             else
             {
-                receiver = new OpenTrackReceiver(open_track_ip, open_track_port.Value, server);
+                if (configuration.GetValue<bool>("UseRawValues") != true) {
+                    receiver = new OpenTrackReceiver(open_track_ip, open_track_port.Value, server, false);
+                } else {
+                    receiver = new OpenTrackReceiver(open_track_ip, open_track_port.Value, server, true);
+                }
             }
 
             receiver.Start();

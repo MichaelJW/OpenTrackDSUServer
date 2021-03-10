@@ -22,6 +22,7 @@ namespace OpenTrackToDSUProtocol
 
         private Socket _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private DSUServer _dsu_server = null;
+        private bool _use_raw_values = false;
 
         private Thread _packet_receive_thread;
         private bool _waiting_on_packet = false;
@@ -48,6 +49,15 @@ namespace OpenTrackToDSUProtocol
             _socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
             _socket.Bind(new IPEndPoint(IPAddress.Parse(ip), port));
             _dsu_server = dsu_server;
+
+            Console.WriteLine($"OpenTrack receiver listening on ip '{ip}' and port '{port.ToString()}'");
+        }
+
+        public OpenTrackReceiver(string ip, int port, DSUServer dsu_server, bool use_raw_values) {
+            _socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
+            _socket.Bind(new IPEndPoint(IPAddress.Parse(ip), port));
+            _dsu_server = dsu_server;
+            _use_raw_values = use_raw_values;
 
             Console.WriteLine($"OpenTrack receiver listening on ip '{ip}' and port '{port.ToString()}'");
         }
@@ -125,9 +135,9 @@ namespace OpenTrackToDSUProtocol
                         received_values[i] = BitConverter.ToDouble(received_bytes, i*8);
                     }
 
-                    if (_dsu_server == null)
+                    if (_dsu_server == null || _use_raw_values)
                     {
-                        // Debug mode, just send the raw open-track data
+                        // Debug mode, or we want raw values rather than diffs; just send the raw open-track data
                         _queued_items.Enqueue(new OpenTrackData { x = received_values[0], y = received_values[1], z = received_values[2], yaw = received_values[3], pitch = received_values[4], roll = received_values[5] });
                     }
                     else
