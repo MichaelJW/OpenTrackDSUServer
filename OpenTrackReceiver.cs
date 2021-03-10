@@ -135,13 +135,29 @@ namespace OpenTrackToDSUProtocol
                         received_values[i] = BitConverter.ToDouble(received_bytes, i*8);
                     }
 
-                    if (_dsu_server == null || _use_raw_values)
+                    if (_dsu_server == null)
                     {
-                        // Debug mode, or we want raw values rather than diffs; just send the raw open-track data
+                        // Debug mode, just send the raw open-track data
                         _queued_items.Enqueue(new OpenTrackData { x = received_values[0], y = received_values[1], z = received_values[2], yaw = received_values[3], pitch = received_values[4], roll = received_values[5] });
-                    }
-                    else
-                    {
+                    } else if (_use_raw_values) {
+                        // We want raw values rather than diffs
+                        bool same_as_previous = true;
+                        for (int i = 0; i < received_values.Length; i++) {
+                            if (received_values[i] != _last_received_opentrack_data[i]) {
+                                same_as_previous = false;
+                                break;
+                            }
+                        }
+
+                        if (!same_as_previous) {
+                            // Only send the data if it has changed
+                            _queued_items.Enqueue(new OpenTrackData { x = received_values[0], y = received_values[1], z = received_values[2], yaw = received_values[3], pitch = received_values[4], roll = received_values[5] });
+                        }
+
+                        for (int i = 0; i < _last_received_opentrack_data.Length; i++) {
+                            _last_received_opentrack_data[i] = received_values[i];
+                        }
+                    } else {
                         // Zeros are a special value, if they are sent, the user is either perfectly still
                         // or "stop" has been pressed
                         // in either case, we should send a packet with no motion
